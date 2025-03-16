@@ -29,12 +29,12 @@ let rec applyAsMany (f: 'Acc -> 'State -> 'Acc option * 'State) (initAcc: 'Acc) 
 
 let foldBinaryOperator
     (operatorMap: Map<token, expr * expr -> expr>)
-    (nextParser: token list -> (expr * token list))
+    (nextParser: parser)
     (input: token list)
     : expr * token list =
     let foldBinaryOperator'
         (operatorMap: Map<token, expr * expr -> expr>)
-        (nextParser: token list -> (expr * token list))
+        (nextParser: parser)
         (acc: expr)
         (input: token list)
         : expr option * token list =
