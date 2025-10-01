@@ -8,11 +8,8 @@
   <ItemGroup>
     <Compile Include="Tokens.fs" />
     <Compile Include="Tokenizer.fs" />
-
-
     <Compile Include="Ast.fs" />
     <Compile Include="Executor.fs" />
-
     <Compile Include="Parser.fs" />
   </ItemGroup>
 
