@@ -1,6 +1,9 @@
 ﻿open System
-open Tokenizer
 open Parser
+open Tokenizer
+open Executor
+open Ast
+
 
 
 [<EntryPoint>]

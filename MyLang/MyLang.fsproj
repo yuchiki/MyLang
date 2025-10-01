@@ -6,12 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="lib/Tokens.fs" />
-    <Compile Include="lib/Tokenizer.fs" />
-    <Compile Include="lib/Ast.fs" />
-    <Compile Include="lib/Parser.fs" />
-    <Compile Include="lib/Executor.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyLangLib\MyLangLib.fsproj" />
   </ItemGroup>
 
 </Project>
