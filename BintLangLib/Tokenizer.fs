@@ -14,7 +14,9 @@ let tokenMap =
           ",", Comma
           "let", Let
           "=", Equal
-          "in", In ]
+          "in", In
+          "fun", Fun
+          "->", Arrow ]
 
 let spaceLike: char list = [ ' '; '\t'; '\n'; '\r' ]
 

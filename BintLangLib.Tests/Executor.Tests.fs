@@ -25,3 +25,6 @@ let ``base cases`` () =
     Variable "notExistingVar" |> evalMustFail
 
     VariableDefinition("foo", Leaf, Branch(Variable "foo", Variable "foo"))
+    |> evalMustSucceedAs (Values.Branch(Values.Leaf, Values.Leaf))
+
+    Function("x", Leaf) |> evalMustSucceedAs (Values.Function("x", Leaf))

@@ -14,7 +14,7 @@ let ``Tokenizer.matchString returns empty for empty string`` () = matchMustSucce
 
 [<Fact>]
 let ``Tokenizer.matchString tokenizes simple Tokens`` () =
-    matchMustSucceedAs [ Leaf; LParen; RParen; Comma; Equal; Let; In ] "@(),=let in"
+    matchMustSucceedAs [ Leaf; LParen; RParen; Comma; Equal; Let; In; Fun; Arrow ] "@(),=let in fun ->"
 
 [<Fact>]
 let ``Tokenizer.matchString tokenizes identifier`` () =
