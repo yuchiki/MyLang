@@ -10,4 +10,5 @@ expr :: =
   | (expr, expr)
   | x
   | let x = expr in expr
+  | fun x -> expr
 ```

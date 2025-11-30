@@ -8,4 +8,6 @@ type token =
     | Let
     | Equal
     | In
+    | Fun
+    | Arrow
     | Identifier of string

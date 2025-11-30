@@ -20,6 +20,7 @@ let rec eval' (env: environment) : expr -> value =
             env[id]
         with e ->
             e |> VariableNotFound |> raise
+    | Ast.Function(identifier, body) -> Function(identifier, body)
 
 let eval (env: environment) (e: expr) : Result<value, exn> =
     try

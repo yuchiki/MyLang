@@ -4,6 +4,7 @@ let rec prettyPrint: Values.value -> string =
     function
     | Values.Leaf -> "@"
     | Values.Branch(l, r) -> $"({prettyPrint l}, {prettyPrint r})"
+    | Values.Function(x, body) -> $"<FUN>"
 
 type ResultBuilder() =
     member this.Bind(computation: Result<'a, 'err>, binder: 'a -> Result<'b, 'err>) : Result<'b, 'err> =
@@ -21,7 +22,9 @@ let result = new ResultBuilder()
 let handleResult: Result<unit, 'a> -> unit =
     function
     | Ok() -> ()
-    | Error err -> raise (Exception(sprintf "error: %A" err))
+    | Error err ->
+
+        raise (Exception(sprintf "error: %A" err))
 
 [<EntryPoint>]
 let main_ _ =
