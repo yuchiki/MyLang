@@ -53,11 +53,13 @@ let rec ParsePrimary: parser =
     | Tokens.Leaf :: rest -> Leaf, rest
     | Tokens.Identifier identifier :: rest -> Variable identifier, rest
     | LParen :: _ as input ->
-        let (lhs, restOfLhs) =
-            (preConsume LParen <| ParsePrimary |> postConsume Comma) input
-
-        let (rhs, restOfRhs) = (ParsePrimary |> postConsume RParen) restOfLhs
+        let lhs, restOfLhs = (preConsume LParen <| ParsePrimary |> postConsume Comma) input
+        let rhs, restOfRhs = (ParsePrimary |> postConsume RParen) restOfLhs
         Branch(lhs, rhs), restOfRhs
+    | Tokens.Let :: Tokens.Identifier identifier :: Tokens.Equal :: rest ->
+        let body, restOfBody = (ParsePrimary |> postConsume In) rest
+        let successor, restOfSuccessor = ParsePrimary restOfBody
+        VariableDefinition(identifier, body, successor), restOfSuccessor
     | rest -> raise (ParseError rest)
 
 let Parse (input: token list) : Result<expr, exn> =

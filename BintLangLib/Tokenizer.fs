@@ -6,7 +6,15 @@ open Tokens
 
 exception MatchError of rest: string
 
-let tokenMap = Map [ "@", Leaf; "(", LParen; ")", RParen; ",", Comma ]
+let tokenMap =
+    Map
+        [ "@", Leaf
+          "(", LParen
+          ")", RParen
+          ",", Comma
+          "let", Let
+          "=", Equal
+          "in", In ]
 
 let spaceLike: char list = [ ' '; '\t'; '\n'; '\r' ]
 

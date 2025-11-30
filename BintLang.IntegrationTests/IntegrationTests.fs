@@ -9,6 +9,7 @@ open TestingUtils
 [<InlineData("(@, @)", "(@, @)")>]
 [<InlineData("(@, ((@, @), @))", "(@, ((@, @), @))")>]
 [<InlineData("(   @ ,  @)", "(@, @)")>]
+[<InlineData("let foo = (@, @) in (foo, foo) ", "((@, @), (@, @))")>]
 let mustSucceed (input: string, output: string) =
     run input [] |> ensureSucceed |> outputIs $"{output}\n" |> ignore
 
