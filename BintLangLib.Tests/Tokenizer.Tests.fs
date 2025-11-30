@@ -13,8 +13,8 @@ let matchMustFail: string -> unit = Tokenizer.matchString >> mustFail
 let ``Tokenizer.matchString returns empty for empty string`` () = matchMustSucceedAs [] ""
 
 [<Fact>]
-let ``Tokenizer.matchString tokenizes simple symbols`` () =
-    matchMustSucceedAs [ Leaf; LParen; RParen; Comma ] "@(),"
+let ``Tokenizer.matchString tokenizes simple Tokens`` () =
+    matchMustSucceedAs [ Leaf; LParen; RParen; Comma; Equal; Let; In ] "@(),=let in"
 
 [<Fact>]
 let ``Tokenizer.matchString tokenizes identifier`` () =

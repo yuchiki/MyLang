@@ -12,6 +12,9 @@ let rec eval' (env: environment) : expr -> value =
     function
     | Ast.Leaf -> Leaf
     | Ast.Branch(lhs, rhs) -> Branch(eval' env lhs, eval' env rhs)
+    | Ast.VariableDefinition(id, body, successor) ->
+        let env' = env.Add(id, eval' env body)
+        eval' env' successor
     | Ast.Variable id ->
         try
             env[id]

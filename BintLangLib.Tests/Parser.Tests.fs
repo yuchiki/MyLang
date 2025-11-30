@@ -16,6 +16,10 @@ let ``parse Branch`` () =
     [ LParen; Leaf; Comma; Leaf; RParen ]
     |> parseMustSucceedAs (Ast.Branch(Ast.Leaf, Ast.Leaf))
 
+[<Fact>]
+let ``parse variable definition`` () =
+    [ Let; Identifier "xxx"; Equal; Leaf; In; Identifier "zzz" ]
+    |> parseMustSucceedAs (Ast.VariableDefinition("xxx", Ast.Leaf, Ast.Variable "zzz"))
 
 [<Fact>]
 let ``parse variable`` () =

@@ -23,3 +23,5 @@ let ``base cases`` () =
     |> evalWithEnvMustSucceedAs (Map.ofList [ ("foo", Values.Leaf) ]) Values.Leaf
 
     Variable "notExistingVar" |> evalMustFail
+
+    VariableDefinition("foo", Leaf, Branch(Variable "foo", Variable "foo"))
