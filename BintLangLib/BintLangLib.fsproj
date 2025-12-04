@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Utils.fs" />
     <Compile Include="types/Tokens.fs" />
     <Compile Include="types/Ast.fs" />
     <Compile Include="types/Values.fs" />

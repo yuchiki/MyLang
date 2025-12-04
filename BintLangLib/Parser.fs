@@ -2,77 +2,104 @@ module Parser
 
 open Tokens
 open Ast
+open Utils
 
 #nowarn "40"
 
 exception ParseError of rest: token list
 
-type parser = token list -> expr * token list
+type parser<'a> = token list -> Result<'a * token list, exn>
 
-let preConsume (expected: token) (p2: parser) : parser =
+
+type ParserBuilder() =
+    member this.Bind(parser1: parser<'a>, binder: 'a -> parser<'b>) : parser<'b> =
+        fun tokens ->
+            result {
+                let! result, rest = parser1 tokens
+                return! binder result rest
+            }
+
+    member this.Return(x: 'a) : parser<'a> = fun tokens -> Ok(x, tokens)
+    member this.ReturnFrom(x: parser<'a>) : parser<'a> = x
+
+    member this.Zero() : parser<'a> = fun tokens -> Error(ParseError tokens)
+
+let parser = new ParserBuilder()
+
+type ParserAlt() =
+    member this.Combine(p1: parser<'a>, p2: parser<'a>) : parser<'a> =
+        fun input ->
+            match p1 input with
+            | Ok res -> Ok res
+            | Error _ -> p2 input
+
+    member this.Zero() : parser<'a> = fun tokens -> Error(ParseError tokens)
+
+let parserAlt = new ParserAlt()
+
+let Consume (token: token) : parser<unit> =
     function
-    | t :: rest when t = expected -> p2 rest
-    | rest -> raise (ParseError rest)
+    | head :: rest when head = token -> Ok((), rest)
+    | tokens -> Error(ParseError tokens)
 
-let postConsume (expected: token) (p2: parser) : parser =
-    fun input ->
-        let expr, rest = p2 input
-
-        match rest with
-        | t :: rest' when t = expected -> expr, rest'
-        | rest' -> raise (ParseError rest')
-
-let rec applyAsMany (f: 'Acc -> 'State -> 'Acc option * 'State) (initAcc: 'Acc) (initState: 'State) : 'Acc * 'State =
-    match f initAcc initState with
-    | Some acc, state -> applyAsMany f acc state
-    | None, state -> initAcc, state
-
-let foldBinaryOperator
-    (operatorMap: Map<token, expr * expr -> expr>)
-    (nextParser: parser)
-    (input: token list)
-    : expr * token list =
-    let foldBinaryOperator'
-        (operatorMap: Map<token, expr * expr -> expr>)
-        (nextParser: parser)
-        (acc: expr)
-        (input: token list)
-        : expr option * token list =
-        match input with
-        | op :: rest when operatorMap.ContainsKey op ->
-            let nextExpr, rest' = nextParser rest
-
-            Some((operatorMap[op]) (acc, nextExpr)), rest'
-        | _ -> None, input
-
-    let firstExpr, rest = nextParser input
-    applyAsMany (foldBinaryOperator' operatorMap nextParser) firstExpr rest
-
-let rec ParsePrimary: parser =
+let consumeIdentifier: parser<string> =
     function
-    | Tokens.Leaf :: rest -> Leaf, rest
-    | Tokens.Identifier identifier :: rest -> Variable identifier, rest
-    | LParen :: rest ->
-        let lhs, restOfLhs = ParsePrimary rest
+    | Tokens.Identifier identifier :: rest -> Ok(identifier, rest)
+    | tokens -> Error(ParseError tokens)
 
-        match restOfLhs with
-        | RParen :: restOfRParen -> lhs, restOfRParen
-        | Comma :: restOfComma ->
-            let rhs, restOfRhs = (ParsePrimary |> postConsume RParen) restOfComma
-            Branch(lhs, rhs), restOfRhs
-        | _ -> raise (ParseError restOfLhs)
-    | Tokens.Let :: Tokens.Identifier identifier :: Tokens.Equal :: rest ->
-        let body, restOfBody = (ParsePrimary |> postConsume In) rest
-        let successor, restOfSuccessor = ParsePrimary restOfBody
-        VariableDefinition(identifier, body, successor), restOfSuccessor
-    | Tokens.Fun :: Tokens.Identifier identifier :: Tokens.Arrow :: rest ->
-        let body, restOfBody = ParsePrimary rest
-        Function(identifier, body), restOfBody
-    | rest -> raise (ParseError rest)
+let rec ParsePrimary: parser<expr> =
+    parserAlt {
+        parser {
+            do! Consume Tokens.Leaf
+            return Leaf
+        }
+
+        parser {
+            let! identifier = consumeIdentifier
+            return Variable identifier
+        }
+
+        parser {
+            do! Consume LParen
+            let! lhs = ParsePrimary
+            do! Consume RParen
+            return lhs
+        }
+
+        parser {
+            do! Consume LParen
+            let! lhs = ParsePrimary
+            do! Consume Comma
+            let! rhs = ParsePrimary
+            do! Consume RParen
+            return Branch(lhs, rhs)
+        }
+
+        parser {
+            do! Consume Tokens.Let
+            let! identifier = consumeIdentifier
+            do! Consume Tokens.Equal
+            let! body = ParsePrimary
+            do! Consume Tokens.In
+            let! successor = ParsePrimary
+            return VariableDefinition(identifier, body, successor)
+        }
+
+        parser {
+            do! Consume Tokens.Fun
+            let! identifier = consumeIdentifier
+            do! Consume Tokens.Arrow
+            let! body = ParsePrimary
+            return Function(identifier, body)
+        }
+    }
+
+
 
 let Parse (input: token list) : Result<expr, exn> =
     try
-        let expr, rest = ParsePrimary input
-        if rest.IsEmpty then Ok expr else Error(ParseError rest)
+        match ParsePrimary input with
+        | Ok(expr, rest) -> if rest.IsEmpty then Ok expr else Error(ParseError rest)
+        | Error e -> Error e
     with ParseError rest ->
         Error(ParseError rest)
