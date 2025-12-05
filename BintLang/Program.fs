@@ -13,15 +13,35 @@ let handleResult: Result<unit, 'a> -> unit =
     | Ok() -> ()
     | Error err ->
 
+        eprintfn "error: %A" err
         raise (Exception(sprintf "error: %A" err))
 
 [<EntryPoint>]
 let main_ _ =
     result {
-        let input = stdin.ReadToEnd()
-        let! tokens = Tokenizer.matchString input
-        let! ast = Parser.Parse tokens
-        let! value = Executor.eval Map.empty ast
+        let input = stdin.ReadToEnd().Trim()
+
+        let! tokens =
+            match Tokenizer.matchString input with
+            | Ok t -> Ok t
+            | Error e ->
+                eprintfn "Tokenizer error: %A" e
+                Error e
+
+        let! ast =
+            match Parser.Parse tokens with
+            | Ok a -> Ok a
+            | Error e ->
+                eprintfn "Parser error: %A" e
+                Error e
+
+        let! value =
+            match Executor.eval Map.empty ast with
+            | Ok v -> Ok v
+            | Error e ->
+                eprintfn "Executor error: %A" e
+                Error e
+
         prettyPrint value |> printfn "%s"
     }
     |> handleResult
