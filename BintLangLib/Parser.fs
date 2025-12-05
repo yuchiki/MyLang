@@ -9,7 +9,7 @@ type parser<'a> = token list -> Result<'a * token list, exn>
 
 #nowarn 40 // computation 式の中の再帰のための警告をサプレスする
 
-let Consume (token: token) : parser<unit> =
+let consume (token: token) : parser<unit> =
     function
     | head :: rest when head = token -> Ok((), rest)
     | tokens -> Error(ParseError tokens)
@@ -59,26 +59,26 @@ let rec ParseExpr: parser<Ast.expr> =
     parserAlt {
         return!
             parser {
-                do! Consume LParen
+                do! consume LParen
                 let! expr = ParseExpr
-                do! Consume RParen
+                do! consume RParen
                 return expr
             }
 
         return!
             parser {
-                do! Consume LParen
+                do! consume LParen
                 let! lhs = ParseExpr
-                do! Consume Comma
+                do! consume Comma
                 let! rhs = ParseExpr
-                do! Consume RParen
+                do! consume RParen
 
                 return Ast.Branch(lhs, rhs)
             }
 
         return!
             parser {
-                do! Consume Leaf
+                do! consume Leaf
                 return Ast.Leaf
             }
 
@@ -90,20 +90,20 @@ let rec ParseExpr: parser<Ast.expr> =
 
         return!
             parser {
-                do! Consume Let
+                do! consume Let
                 let! identifier = consumeIdentifier
-                do! Consume Equal
+                do! consume Equal
                 let! body = ParseExpr
-                do! Consume In
+                do! consume In
                 let! successor = ParseExpr
                 return Ast.VariableDefinition(identifier, body, successor)
             }
 
         return!
             parser {
-                do! Consume Fun
+                do! consume Fun
                 let! identifier = consumeIdentifier
-                do! Consume Arrow
+                do! consume Arrow
                 let! body = ParseExpr
                 return Ast.Function(identifier, body)
             }
