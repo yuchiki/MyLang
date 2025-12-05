@@ -1,10 +1,7 @@
 module Parser
 
 open Tokens
-open Ast
 open Utils
-
-#nowarn "40"
 
 exception ParseError of rest: token list
 
@@ -18,7 +15,7 @@ let Consume (token: token) : parser<unit> =
 
 let consumeIdentifier: parser<string> =
     function
-    | Tokens.Identifier identifier :: rest -> Ok(identifier, rest)
+    | Identifier identifier :: rest -> Ok(identifier, rest)
     | tokens -> Error(ParseError tokens)
 
 
@@ -57,7 +54,7 @@ type ParserAltBuilder() =
 
 let parserAlt = new ParserAltBuilder()
 
-let rec ParseExpr: parser<expr> =
+let rec ParseExpr: parser<Ast.expr> =
     parserAlt {
         return!
             parser {
@@ -75,47 +72,45 @@ let rec ParseExpr: parser<expr> =
                 let! rhs = ParseExpr
                 do! Consume RParen
 
-                return Branch(lhs, rhs)
+                return Ast.Branch(lhs, rhs)
             }
 
         return!
             parser {
-                do! Consume Tokens.Leaf
-                return Leaf
+                do! Consume Leaf
+                return Ast.Leaf
             }
 
         return!
             parser {
                 let! identifier = consumeIdentifier
-                return Variable identifier
+                return Ast.Variable identifier
             }
 
         return!
             parser {
-                do! Consume Tokens.Let
+                do! Consume Let
                 let! identifier = consumeIdentifier
-                do! Consume Tokens.Equal
+                do! Consume Equal
                 let! body = ParseExpr
-                do! Consume Tokens.In
+                do! Consume In
                 let! successor = ParseExpr
-                return VariableDefinition(identifier, body, successor)
+                return Ast.VariableDefinition(identifier, body, successor)
             }
 
         return!
             parser {
-                do! Consume Tokens.Fun
+                do! Consume Fun
                 let! identifier = consumeIdentifier
-                do! Consume Tokens.Arrow
+                do! Consume Arrow
                 let! body = ParseExpr
-                return Function(identifier, body)
+                return Ast.Function(identifier, body)
             }
     }
 
-let Parse: token list -> Result<expr, exn> =
+let Parse: token list -> Result<Ast.expr, exn> =
     fun input ->
-        try
-            match ParseExpr input with
-            | Ok(expr, rest) -> if rest.IsEmpty then Ok expr else Error(ParseError rest)
-            | Error e -> Error e
-        with ParseError rest ->
-            Error(ParseError rest)
+        match ParseExpr input with
+        | Ok(expr, []) -> Ok expr
+        | Ok(_, rest) -> Error(ParseError rest)
+        | Error e -> Error e
