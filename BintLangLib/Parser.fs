@@ -7,6 +7,7 @@ exception ParseError of rest: token list
 
 type parser<'a> = token list -> Result<'a * token list, exn>
 
+#nowarn 40 // computation 式の中の再帰のための警告をサプレスする
 
 let Consume (token: token) : parser<unit> =
     function
