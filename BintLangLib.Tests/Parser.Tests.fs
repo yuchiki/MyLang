@@ -35,6 +35,11 @@ let ``parse function`` () =
     [ Fun; Identifier "x"; Arrow; Identifier "y" ]
     |> parseMustSucceedAs (Ast.Function("x", Ast.Variable "y"))
 
+[<Fact>]
+let ``parse application`` () =
+    [ Identifier "x"; Identifier "y"; Identifier "z" ]
+    |> parseMustSucceedAs (Ast.Application(Ast.Application(Ast.Variable "x", Ast.Variable "y"), Ast.Variable "z"))
+
 
 [<Fact>]
 let ``parse Branch recursively`` () =
@@ -54,4 +59,4 @@ let ``parse Branch recursively`` () =
     |> parseMustSucceedAs (Ast.Branch(Ast.Branch(Ast.Leaf, Ast.Branch(Ast.Leaf, Ast.Leaf)), Ast.Leaf))
 
 [<Fact>]
-let ``parse fails if unparsable`` () = [ Leaf; Leaf ] |> parseMustFail
+let ``parse fails if unparsable`` () = [ Leaf; Comma ] |> parseMustFail

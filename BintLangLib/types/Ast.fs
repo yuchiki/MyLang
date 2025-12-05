@@ -6,3 +6,4 @@ type expr =
     | Variable of string
     | VariableDefinition of string * expr * expr
     | Function of string * expr
+    | Application of expr * expr
