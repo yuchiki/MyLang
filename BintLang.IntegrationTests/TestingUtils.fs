@@ -21,9 +21,6 @@ let ensureFail (r: ExecutionResult) : ExecutionResult =
 
 
 let outputIs (expected: string) (r: ExecutionResult) : ExecutionResult =
-    if r.error <> "" then
-        eprintfn "STDERR: %s" r.error
-
     Assert.Equal(expected, r.output)
     r
 
