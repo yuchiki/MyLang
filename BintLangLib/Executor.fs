@@ -7,29 +7,30 @@ open Values
 exception VariableNotFound of string
 exception NotAFunction
 
-let rec eval' (env: environment) : expr -> value =
+let rec eval' (env: environment) : expr -> Result<value, exn> =
     function
-    | Ast.Leaf -> Leaf
-    | Ast.Branch(lhs, rhs) -> Branch(eval' env lhs, eval' env rhs)
+    | Ast.Leaf -> Ok Leaf
+    | Ast.Branch(lhs, rhs) ->
+        match eval' env lhs, eval' env rhs with
+        | Ok l, Ok r -> Ok(Branch(l, r))
+        | Error e, _ -> Error e
+        | _, Error e -> Error e
     | Ast.VariableDefinition(id, body, successor) ->
-        let env' = env.Add(id, eval' env body)
-        eval' env' successor
+        match eval' env body with
+        | Ok v ->
+            let env' = env.Add(id, v)
+            eval' env' successor
+        | Error e -> Error e
     | Ast.Variable id ->
-        try
-            env[id]
-        with _ ->
-            VariableNotFound id |> raise
-    | Ast.Function(identifier, body) -> Function(env, identifier, body)
+        match env.TryFind(id) with
+        | Some v -> Ok v
+        | None -> Error(VariableNotFound id)
+    | Ast.Function(identifier, body) -> Ok(Function(env, identifier, body))
     | Ast.Application(e1, e2) ->
-        let v1 = eval' env e1
-        let v2 = eval' env e2
+        match eval' env e1, eval' env e2 with
+        | Ok(Function(inner_env, arg, body)), Ok v2 -> eval' (inner_env.Add(arg, v2)) body
+        | Ok _, Ok _ -> Error NotAFunction
+        | Error e, _ -> Error e
+        | _, Error e -> Error e
 
-        match v1 with
-        | Function(inner_env, arg, body) -> eval' (inner_env.Add(arg, v2)) body
-        | _ -> raise NotAFunction
-
-let eval (env: environment) (e: expr) : Result<value, exn> =
-    try
-        e |> eval' env |> Ok
-    with VariableNotFound _ as e ->
-        Error e
+let eval (env: environment) (e: expr) : Result<value, exn> = eval' env e
