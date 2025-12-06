@@ -2,6 +2,11 @@
 
 言語処理系の習作
 
+# 使用方法
+
+- dotnet run --project BintLang
+- cat <programfile> | dotnet run --project BintLang
+
 ## 文法
 
 ```txt
