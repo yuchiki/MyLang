@@ -11,7 +11,6 @@ type ResultBuilder() =
     member _.Bind(x, f) = Result.bind f x
     member _.Return x = Ok x
     member _.ReturnFrom x = x
-    member _.Zero() = Error()
 
     member _.Combine(a, b) =
         match a with
