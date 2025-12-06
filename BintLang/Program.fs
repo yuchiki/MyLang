@@ -34,7 +34,9 @@ let repl () =
 
         let input = stdin.ReadLine()
 
-        if input = ":q" then
+        if isNull input then
+            exit 0
+        elif input = ":q" then
             exit 0
 
         let res =
