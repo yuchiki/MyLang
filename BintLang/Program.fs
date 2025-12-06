@@ -27,12 +27,18 @@ let handleResult: Result<unit, 'a> -> unit =
         raise (Exception(sprintf "error: %A" err))
 
 let repl () =
+    printfn "quit with ':q'"
+
     while true do
         printf "> "
 
+        let input = stdin.ReadLine()
+
+        if input = ":q" then
+            exit 0
+
         let res =
             result {
-                let input = stdin.ReadLine()
                 let! tokens = Tokenizer.matchString input
                 let! ast = Parser.Parse tokens
                 let! value = Executor.eval Map.empty ast
@@ -43,7 +49,7 @@ let repl () =
         | Ok v -> printfn "%s" v
         | Error err -> Console.WriteLine err
 
-let oneshot () =
+let oneShot () =
     result {
         let input = stdin.ReadToEnd()
         let! tokens = Tokenizer.matchString input
@@ -55,7 +61,6 @@ let oneshot () =
 
 [<EntryPoint>]
 let main_ _ =
-    if Console.IsInputRedirected then oneshot () else repl ()
-
+    if Console.IsInputRedirected then oneShot () else repl ()
 
     0
