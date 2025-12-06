@@ -4,7 +4,7 @@ open Ast
 open Values
 
 
-exception VariableNotFound of exn
+exception VariableNotFound of string
 exception NotAFunction
 
 let rec eval' (env: environment) : expr -> value =
@@ -17,8 +17,8 @@ let rec eval' (env: environment) : expr -> value =
     | Ast.Variable id ->
         try
             env[id]
-        with e ->
-            e |> VariableNotFound |> raise
+        with _ ->
+            VariableNotFound id |> raise
     | Ast.Function(identifier, body) -> Function(env, identifier, body)
     | Ast.Application(e1, e2) ->
         let v1 = eval' env e1

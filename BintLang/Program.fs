@@ -26,8 +26,24 @@ let handleResult: Result<unit, 'a> -> unit =
 
         raise (Exception(sprintf "error: %A" err))
 
-[<EntryPoint>]
-let main_ _ =
+let repl () =
+    while true do
+        printf "> "
+
+        let res =
+            result {
+                let input = stdin.ReadLine()
+                let! tokens = Tokenizer.matchString input
+                let! ast = Parser.Parse tokens
+                let! value = Executor.eval Map.empty ast
+                return prettyPrint value
+            }
+
+        match res with
+        | Ok v -> printfn "%s" v
+        | Error err -> Console.WriteLine err
+
+let oneshot () =
     result {
         let input = stdin.ReadToEnd()
         let! tokens = Tokenizer.matchString input
@@ -36,5 +52,10 @@ let main_ _ =
         prettyPrint value |> printfn "%s"
     }
     |> handleResult
+
+[<EntryPoint>]
+let main_ _ =
+    if Console.IsInputRedirected then oneshot () else repl ()
+
 
     0
