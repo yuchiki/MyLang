@@ -7,7 +7,7 @@ open Ast
 let evalMustSucceedAs (expected: Values.value) : expr -> unit =
     eval Map.empty >> mustSucceedAs expected
 
-let evalWithEnvMustSucceedAs (env: environment) (expected: Values.value) : expr -> unit =
+let evalWithEnvMustSucceedAs (env: Values.environment) (expected: Values.value) : expr -> unit =
     eval env >> mustSucceedAs expected
 
 let evalMustFail: expr -> unit = eval Map.empty >> mustFail
@@ -27,4 +27,7 @@ let ``base cases`` () =
     VariableDefinition("foo", Leaf, Branch(Variable "foo", Variable "foo"))
     |> evalMustSucceedAs (Values.Branch(Values.Leaf, Values.Leaf))
 
-    Function("x", Leaf) |> evalMustSucceedAs (Values.Function("x", Leaf))
+    Function("x", Leaf) |> evalMustSucceedAs (Values.Function(Map.empty, "x", Leaf))
+
+    Application(Function("x", Branch(Variable "x", Leaf)), Leaf)
+    |> evalMustSucceedAs (Values.Branch(Values.Leaf, Values.Leaf))
