@@ -6,9 +6,10 @@
 
 ```txt
 expr :: =
-  | @
-  | (expr, expr)
-  | x
-  | let x = expr in expr
-  | fun x -> expr
+  | @                     // leaf value
+  | (expr, expr)          // branch
+  | x                     // variable
+  | let x = expr in expr  // assignment
+  | fun x -> expr         // function
+  | expr expr             // function application
 ```

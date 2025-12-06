@@ -4,7 +4,7 @@ let rec prettyPrint: Values.value -> string =
     function
     | Values.Leaf -> "@"
     | Values.Branch(l, r) -> $"({prettyPrint l}, {prettyPrint r})"
-    | Values.Function(x, body) -> $"<FUN>"
+    | Values.Function(_, _, _) -> $"<FUN>"
 
 type ResultBuilder() =
     member this.Bind(computation: Result<'a, 'err>, binder: 'a -> Result<'b, 'err>) : Result<'b, 'err> =

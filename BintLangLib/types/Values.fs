@@ -1,6 +1,10 @@
 module Values
 
-type value =
+open Ast
+
+type environment = Map<string, value>
+
+and value =
     | Leaf
     | Branch of value * value
-    | Function of string * Ast.expr
+    | Function of environment * string * Ast.expr

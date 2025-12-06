@@ -20,7 +20,6 @@ let consumeIdentifier: parser<string> =
     | tokens -> Error(ParseError tokens)
 
 
-
 type ParserBuilder() =
     member this.Bind(parser1: parser<'a>, binder: 'a -> parser<'b>) : parser<'b> =
         fun tokens ->
@@ -54,6 +53,17 @@ type ParserAltBuilder() =
     member _.Zero() : parser<'a> = fun tokens -> Error(ParseError tokens)
 
 let parserAlt = new ParserAltBuilder()
+
+
+let asManyAsPossible (p: parser<'a>) : parser<'a list> =
+    let rec asManyAsPossible' (tokens: token list) : 'a list * token list =
+        match p tokens with
+        | Error _ -> [], tokens
+        | Ok(expr, rest) ->
+            let result, ultimateRest = asManyAsPossible' rest
+            expr :: result, ultimateRest
+
+    asManyAsPossible' >> Ok
 
 let rec ParseExpr: parser<Ast.expr> =
     parserAlt {
@@ -109,9 +119,17 @@ let rec ParseExpr: parser<Ast.expr> =
             }
     }
 
+let rec parseApplicative: parser<Ast.expr> =
+    parser {
+        match! asManyAsPossible ParseExpr with
+        | [] -> ()
+        | x :: xs -> return List.fold (fun x y -> Ast.Application(x, y)) x xs
+    }
+
+
 let Parse: token list -> Result<Ast.expr, exn> =
     fun input ->
-        match ParseExpr input with
+        match parseApplicative input with
         | Ok(expr, []) -> Ok expr
         | Ok(_, rest) -> Error(ParseError rest)
         | Error e -> Error e
