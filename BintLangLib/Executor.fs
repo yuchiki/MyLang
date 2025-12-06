@@ -7,19 +7,7 @@ open Values
 
 
 
-type ResultBuilder() =
-    member _.Bind(x, f) = Result.bind f x
-    member _.Return x = Ok x
-    member _.ReturnFrom x = x
-
-    member _.Combine(a, b) =
-        match a with
-        | Ok _ -> b
-        | Error e -> Error e
-
-    member _.Delay f = f ()
-
-let result = ResultBuilder()
+let result = Utils.ResultBuilder()
 
 exception VariableNotFound of string
 exception NotAFunction
